@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import HomePage from './components/Homepage'; // Match the file name exactly
+import HomePage from './components/Homepage';
 import Dashboard from './components/Dashboard';
 import Registration from './components/Registration';
 import Withdraw from './components/Withdraw';

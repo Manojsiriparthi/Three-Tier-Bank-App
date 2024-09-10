@@ -12,7 +12,7 @@ router.post('/register', async (req, res) => {
 
   const accountNumber = Math.floor(Math.random() * 10000000000).toString();
   const ifscCode = 'BANK0001234';
-  const startingBalance = Math.floor(Math.random() * 500) + 100;  // Random balance between £100 and £500
+  const startingBalance = Math.floor(Math.random() * 500) + 100;  // Random balance between 100 and 500
 
   const newAccount = new Account({
     firstName,
@@ -23,24 +23,24 @@ router.post('/register', async (req, res) => {
     accountType,
     accountNumber,
     ifscCode,
-    balance: startingBalance,  // Assign random starting balance
+    balance: startingBalance,
   });
 
   try {
     await newAccount.save();
-    res.json(newAccount);
+    res.status(201).json(newAccount); // Return the new account with status 201
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// Fetch all registered accounts for dropdown selection
-router.get('/', async (req, res) => { // Ensure this is a GET route
+// Fetch all registered accounts
+router.get('/', async (req, res) => {
   try {
-    const accounts = await Account.find({});
-    res.json(accounts); // Return the account data
+    const accounts = await Account.find({}); // Fetch all accounts from the database
+    res.json(accounts); // Return accounts as JSON
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: err.message }); // Return error message if something goes wrong
   }
 });
 
@@ -59,6 +59,7 @@ router.post('/deposit', async (req, res) => {
       return res.status(404).json({ message: 'Account not found' });
     }
 
+    // Update the account balance by adding the deposit amount
     account.balance += amount;
     await account.save();
 
@@ -91,6 +92,7 @@ router.post('/withdraw', async (req, res) => {
       return res.status(400).json({ message: 'Insufficient balance' });
     }
 
+    // Deduct the withdrawal amount from the balance
     account.balance -= amount;
     await account.save();
 
@@ -104,7 +106,7 @@ router.post('/withdraw', async (req, res) => {
   }
 });
 
-// Transfer route (optional if you need it)
+// Transfer route
 router.post('/transfer', async (req, res) => {
   const { fromAccountNumber, toAccountNumber, amount } = req.body;
 
@@ -124,6 +126,7 @@ router.post('/transfer', async (req, res) => {
       return res.status(400).json({ message: 'Insufficient balance in source account' });
     }
 
+    // Perform the transfer
     fromAccount.balance -= amount;
     toAccount.balance += amount;
 
