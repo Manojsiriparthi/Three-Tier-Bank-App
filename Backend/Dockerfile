@@ -1,36 +1,21 @@
-# Stage 1: Build Stage
-FROM node:16-alpine AS build
+# Step 1: Use Node.js 16 as the base image for building and running the backend
+FROM node:16
 
-# Set the working directory
+# Step 2: Set the working directory inside the container to `/app`
 WORKDIR /app
 
-# Copy the package.json and package-lock.json
+# Step 3: Copy `package.json` and `package-lock.json` to the working directory
 COPY package.json package-lock.json ./
 
-# Install dependencies
+# Step 4: Install the backend dependencies using npm
 RUN npm install
 
-# Copy the rest of the application
+# Step 5: Copy the rest of the backend application code to the working directory
 COPY . .
 
-# Stage 2: Production Stage
-FROM node:16-alpine
-
-# Set the working directory in the production image
-WORKDIR /app
-
-# Copy only the node_modules from the build stage
-COPY --from=build /app/node_modules ./node_modules
-
-# Copy the application files from the build stage
-COPY --from=build /app ./
-
-# Expose port 5000 to the outside world
+# Step 6: Expose the port 5000 to make the backend accessible
 EXPOSE 5000
 
-# Set environment variables (make sure you have these in .env)
-ENV NODE_ENV production
-
-# Start the application
+# Step 7: Start the backend server with npm
 CMD ["npm", "start"]
 
