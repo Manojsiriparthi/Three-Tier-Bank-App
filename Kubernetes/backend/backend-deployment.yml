@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bankapp-backend
+  namespace: three-tier
+  labels:
+    app: bankapp
+    role: backend
+    env: demo
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      app: bankapp
+      role: backend
+  template:
+    metadata:
+      labels:
+        app: bankapp
+        role: backend
+    spec:
+      containers:
+      - name: bankapp-backend
+        image: manojsiriparthi/bankapp-backend:latest
+        imagePullPolicy: Always
+        env:
+          - name: MONGO_URI
+            value: "mongodb+srv://manojsiriparthi:Manoj2627@manoj-bank.n8ql6.mongodb.net/Bank-App?retryWrites=true&w=majority&appName=Manoj-Bank"
+          - name: PORT
+            value: "5000"
+        ports:
+        - containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          failureThreshold: 10
+
