@@ -40,8 +40,8 @@ router.get('/', (req, res) => {
 router.post('/deposit', (req, res) => {
   const { accountNumber, amount } = req.body;
 
-  if (!accountNumber || !amount) {
-    return res.status(400).json({ message: 'Account number and amount are required' });
+  if (!accountNumber || !amount || amount <= 0) {
+    return res.status(400).json({ message: 'Account number and valid amount are required' });
   }
 
   const getBalanceSql = 'SELECT balance FROM accounts WHERE accountNumber = ?';
@@ -66,8 +66,8 @@ router.post('/deposit', (req, res) => {
 router.post('/withdraw', (req, res) => {
   const { accountNumber, amount } = req.body;
 
-  if (!accountNumber || !amount) {
-    return res.status(400).json({ message: 'Account number and amount are required' });
+  if (!accountNumber || !amount || amount <= 0) {
+    return res.status(400).json({ message: 'Account number and valid amount are required' });
   }
 
   const getBalanceSql = 'SELECT balance FROM accounts WHERE accountNumber = ?';
@@ -92,62 +92,6 @@ router.post('/withdraw', (req, res) => {
   });
 });
 
-// Transfer between accounts
-router.post('/transfer', (req, res) => {
-  const { fromAccountNumber, toAccountNumber, amount } = req.body;
-
-  if (!fromAccountNumber || !toAccountNumber || !amount || fromAccountNumber === toAccountNumber) {
-    return res.status(400).json({ message: 'Valid account numbers and amount are required' });
-  }
-
-  const getBalanceSql = 'SELECT balance FROM accounts WHERE accountNumber = ?';
-
-  // Fetch sender's account balance
-  db.query(getBalanceSql, [fromAccountNumber], (err, senderResults) => {
-    if (err || senderResults.length === 0) {
-      return res.status(404).json({ message: 'Sender account not found' });
-    }
-
-    const senderBalance = parseFloat(senderResults[0].balance);
-    if (senderBalance < amount) {
-      return res.status(400).json({ message: 'Insufficient balance in sender account' });
-    }
-
-    // Fetch receiver's account balance
-    db.query(getBalanceSql, [toAccountNumber], (err, receiverResults) => {
-      if (err || receiverResults.length === 0) {
-        return res.status(404).json({ message: 'Receiver account not found' });
-      }
-
-      const receiverBalance = parseFloat(receiverResults[0].balance);
-      const updatedSenderBalance = (senderBalance - parseFloat(amount)).toFixed(2);
-      const updatedReceiverBalance = (receiverBalance + parseFloat(amount)).toFixed(2);
-
-      // Update both accounts' balances
-      const updateBalanceSql = 'UPDATE accounts SET balance = ? WHERE accountNumber = ?';
-      
-      // Update sender's balance
-      db.query(updateBalanceSql, [updatedSenderBalance, fromAccountNumber], (err) => {
-        if (err) {
-          return res.status(500).json({ message: 'Error updating sender balance' });
-        }
-
-        // Update receiver's balance
-        db.query(updateBalanceSql, [updatedReceiverBalance, toAccountNumber], (err) => {
-          if (err) {
-            return res.status(500).json({ message: 'Error updating receiver balance' });
-          }
-
-          res.json({
-            message: 'Transfer successful',
-            fromAccountNewBalance: updatedSenderBalance,
-            toAccountNewBalance: updatedReceiverBalance
-          });
-        });
-      });
-    });
-  });
-});
-
 module.exports = router;
 
+  
