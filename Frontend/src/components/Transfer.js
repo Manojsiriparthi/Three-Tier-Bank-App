@@ -8,7 +8,7 @@ const Transfer = () => {
   const [accounts, setAccounts] = useState([]); // State for storing accounts
   const [fromAccount, setFromAccount] = useState(null); // State for the from account
   const [toAccount, setToAccount] = useState(null); // State for the to account
-  const [transferAmount, setTransferAmount] = useState(0); // State for transfer amount
+  const [transferAmount, setTransferAmount] = useState(''); // State for transfer amount
   const [message, setMessage] = useState(''); // State for success/error messages
 
   // Fetch accounts from the backend when the component loads
@@ -30,7 +30,7 @@ const Transfer = () => {
   const handleTransfer = async (e) => {
     e.preventDefault(); // Prevent default form submission
 
-    if (!fromAccount || !toAccount || fromAccount._id === toAccount._id) {
+    if (!fromAccount || !toAccount || fromAccount.accountNumber === toAccount.accountNumber) {
       setMessage('Please select valid accounts');
       return;
     }
@@ -49,13 +49,16 @@ const Transfer = () => {
         body: JSON.stringify({
           fromAccountNumber: fromAccount.accountNumber, // Send from account number
           toAccountNumber: toAccount.accountNumber, // Send to account number
-          amount: parseInt(transferAmount, 10), // Ensure transfer amount is sent as a number
+          amount: parseFloat(transferAmount), // Ensure transfer amount is a number
         }),
       });
 
       const result = await response.json(); // Get response from backend
       if (response.ok) {
         setMessage('Transfer successful');
+        setFromAccount(null); // Clear account selection after successful transfer
+        setToAccount(null);
+        setTransferAmount(''); // Clear amount field
       } else {
         setMessage(result.message || 'Error making transfer');
       }
@@ -65,37 +68,49 @@ const Transfer = () => {
     }
   };
 
+  // Render account details when selected
+  const renderAccountDetails = (account) => (
+    <div>
+      <p>Account Number: {account.accountNumber}</p>
+      <p>IFSC Code: {account.ifscCode}</p>
+      <p>Available Balance: ₹{account.balance}</p>
+    </div>
+  );
+
   return (
     <div className="transfer-container">
       <h2>Transfer</h2>
 
       {/* Dropdown to select the from account */}
       <label>From Account</label>
-      <select onChange={(e) => setFromAccount(accounts.find(acc => acc._id === e.target.value))}>
+      <select onChange={(e) => setFromAccount(accounts.find(acc => acc.accountNumber === e.target.value))}>
         <option value="">Select an account</option>
         {accounts.map((account) => (
-          <option key={account._id} value={account._id}>
+          <option key={account.accountNumber} value={account.accountNumber}>
             {account.firstName} {account.lastName}
           </option>
         ))}
       </select>
+      {fromAccount && renderAccountDetails(fromAccount)}
 
       {/* Dropdown to select the to account */}
       <label style={{ marginTop: '10px' }}>To Account</label>
-      <select onChange={(e) => setToAccount(accounts.find(acc => acc._id === e.target.value))}>
+      <select onChange={(e) => setToAccount(accounts.find(acc => acc.accountNumber === e.target.value))}>
         <option value="">Select an account</option>
         {accounts.map((account) => (
-          <option key={account._id} value={account._id}>
+          <option key={account.accountNumber} value={account.accountNumber}>
             {account.firstName} {account.lastName}
           </option>
         ))}
       </select>
+      {toAccount && renderAccountDetails(toAccount)}
 
       {/* Form for transferring money */}
       <form onSubmit={handleTransfer} className="form-container" style={{ marginTop: '10px' }}>
         <input 
           type="number" 
           placeholder="Transfer Amount" 
+          value={transferAmount}
           onChange={(e) => setTransferAmount(e.target.value)} // Update transfer amount
         />
         <button type="submit">Transfer</button>

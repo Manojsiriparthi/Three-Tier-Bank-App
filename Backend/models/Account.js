@@ -1,18 +1,28 @@
-const mongoose = require('mongoose');
+const db = require('../config/db'); // MySQL connection
 
-const accountSchema = new mongoose.Schema({
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
-    address: { type: String, required: true },
-    contactNumber: { type: String, required: true },
-    annualIncome: { type: Number, required: true },  // Store as a number
-    accountType: { type: String, required: true },
-    accountNumber: { type: String, required: true, unique: true },
-    ifscCode: { type: String, required: true },
-    balance: { type: Number, default: 0 },  // Default balance is 0
-});
+const Account = {
+  create: (data, callback) => {
+    const { firstName, lastName, address, contactNumber, annualIncome, accountType, accountNumber, ifscCode, balance } = data;
+    const sql = `INSERT INTO accounts (firstName, lastName, address, contactNumber, annualIncome, accountType, accountNumber, ifscCode, balance) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+    db.query(sql, [firstName, lastName, address, contactNumber, annualIncome, accountType, accountNumber, ifscCode, balance], callback);
+  },
 
-const Account = mongoose.model('Account', accountSchema, 'backend');  // Use the 'backend' collection
+  findByAccountNumber: (accountNumber, callback) => {
+    const sql = 'SELECT * FROM accounts WHERE accountNumber = ?';
+    db.query(sql, [accountNumber], callback);
+  },
+
+  updateBalance: (accountNumber, balance, callback) => {
+    const sql = 'UPDATE accounts SET balance = ? WHERE accountNumber = ?';
+    db.query(sql, [balance, accountNumber], callback);
+  },
+
+  findAll: (callback) => {
+    const sql = 'SELECT * FROM accounts';
+    db.query(sql, callback);
+  }
+};
 
 module.exports = Account;
 
