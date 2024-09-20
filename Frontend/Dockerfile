@@ -1,25 +1,36 @@
-# Step 1: Use Node.js 16 as the base image for building and running the frontend
-FROM node:16
+# Step 1: Build the frontend app using Node.js 16
+FROM node:16 AS build
 
-# Step 2: Set the working directory inside the container to `/app`
+# Set the working directory inside the container
 WORKDIR /app
 
-# Step 3: Copy `package.json` and `package-lock.json` to the working directory
-# This ensures dependencies are installed based on these files
+# Copy `package.json` and `package-lock.json` first to cache dependencies
 COPY package.json package-lock.json ./
 
-# Step 4: Install the dependencies using npm
+# Install the dependencies
 RUN npm install
 
-# Step 5: Copy the rest of the application code to the working directory
+# Copy the rest of the application code to the container
 COPY . .
 
-# Step 6: Build the React frontend application
+# Build the React app for production
 RUN npm run build
 
-# Step 7: Expose the port 3000 to make the frontend accessible
+# Step 2: Serve the app using Node.js Alpine
+FROM node:16-alpine
+
+# Set the working directory inside the production image
+WORKDIR /app
+
+# Copy the build output from the previous stage
+COPY --from=build /app/build /app/build
+
+# Install a simple HTTP server to serve the React app
+RUN npm install -g serve
+
+# Expose the port 3000 (or any other port you want to use)
 EXPOSE 3000
 
-# Step 8: Start the frontend server with npm
-CMD ["npm", "start"]
+# Start the app using the `serve` package
+CMD ["serve", "-s", "build", "-l", "3000"]
 

@@ -1,33 +1,52 @@
 version: '3.8'
 
 services:
+  # Backend service
+  backend:
+    build: ./Backend
+    expose:
+      - "5000"  # Expose backend to other services internally (no need to expose to host)
+    environment:
+      - NODE_ENV=production
+      - MYSQL_HOST=mysql
+      - MYSQL_USER=manoj
+      - MYSQL_PASSWORD=Manoj@2627
+      - MYSQL_DB=bank_app_db
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+
+  # Frontend service
   frontend:
-    build:
-      context: ./Frontend
-    container_name: frontend
+    build: ./Frontend
     ports:
-      - "3000:3000"
+      - "3000:3000"  # Expose frontend on port 3000
+    environment:
+      - NODE_ENV=production  # Ensure that frontend knows it's running in production
     depends_on:
       - backend
-    environment:
-      - NODE_ENV=production
     networks:
-      - bank-network
+      - app-network
 
-  backend:
-    build:
-      context: ./Backend
-    container_name: backend
+  # MySQL database service
+  mysql:
+    image: mysql:5.7
     ports:
-      - "5000:5000"
+      - "3306:3306"  # MySQL port exposed
     environment:
-      - MONGO_URI=mongodb+srv://manojsiriparthi:Manoj2627@manoj-bank.n8ql6.mongodb.net/Bank-App?retryWrites=true&w=majority&appName=Manoj-Bank
-      - NODE_ENV=production
-      - PORT=5000
+      MYSQL_ROOT_PASSWORD: Manoj@2627
+      MYSQL_DATABASE: bank_app_db
+      MYSQL_USER: manoj
+      MYSQL_PASSWORD: Manoj@2627
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
-      - bank-network
+      - app-network
 
 networks:
-  bank-network:
-    driver: bridge
+  app-network:
+
+volumes:
+  mysql_data:
 

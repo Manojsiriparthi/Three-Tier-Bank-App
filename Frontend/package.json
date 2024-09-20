@@ -3,21 +3,30 @@
   "version": "1.0.0",
   "description": "Three-tier banking application using React and MongoDB",
   "scripts": {
-    "start": "PORT=3000 react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "postinstall": "npm install eslint-plugin-react eslint-plugin-jsx-a11y eslint-plugin-import --save-dev"
   },
   "dependencies": {
     "axios": "^1.7.7",
-    "eslint": "^8.57.1",
-    "eslint-config-react-app": "^7.0.1",
-    "eslint-plugin-react": "^7.36.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.26.2",
     "react-scripts": "^5.0.1",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "eslint": "^8.57.1",
+    "eslint-config-react-app": "^7.0.1",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-jsx-a11y": "^6.10.0",
+    "eslint-plugin-react": "^7.36.1",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
   },
   "browserslist": {
     "production": [
@@ -30,11 +39,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "webpack": "^5.94.0",
-    "webpack-cli": "^5.1.4"
   }
 }

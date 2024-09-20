@@ -15,7 +15,7 @@ const Registration = () => {
   // Set correct API URL based on environment (local or production)
   const apiUrl = process.env.NODE_ENV === 'development'
     ? 'http://localhost:5000' 
-    : 'http://backend:5000';
+    : 'http://localhost:5000';
 
   // Handle form input changes
   const handleChange = (e) => {

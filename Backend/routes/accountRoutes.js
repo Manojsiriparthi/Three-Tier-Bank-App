@@ -92,6 +92,51 @@ router.post('/withdraw', (req, res) => {
   });
 });
 
+// Transfer between accounts
+router.post('/transfer', (req, res) => {
+  const { fromAccountNumber, toAccountNumber, amount } = req.body;
+
+  if (!fromAccountNumber || !toAccountNumber || amount <= 0) {
+    return res.status(400).json({ message: 'Invalid transfer details' });
+  }
+
+  // Start a MySQL transaction
+  db.beginTransaction((err) => {
+    if (err) {
+      return res.status(500).json({ message: 'Transaction failed to start' });
+    }
+
+    // Step 1: Deduct from the sender's account
+    const deductSql = 'UPDATE accounts SET balance = balance - ? WHERE accountNumber = ? AND balance >= ?';
+    db.query(deductSql, [amount, fromAccountNumber, amount], (err, result) => {
+      if (err || result.affectedRows === 0) {
+        return db.rollback(() => {
+          res.status(400).json({ message: 'Insufficient balance or invalid sender account' });
+        });
+      }
+
+      // Step 2: Add to the recipient's account
+      const addSql = 'UPDATE accounts SET balance = balance + ? WHERE accountNumber = ?';
+      db.query(addSql, [amount, toAccountNumber], (err, result) => {
+        if (err || result.affectedRows === 0) {
+          return db.rollback(() => {
+            res.status(400).json({ message: 'Invalid recipient account' });
+          });
+        }
+
+        // Commit the transaction
+        db.commit((err) => {
+          if (err) {
+            return db.rollback(() => {
+              res.status(500).json({ message: 'Transfer failed' });
+            });
+          }
+          res.status(200).json({ message: 'Transfer successful' });
+        });
+      });
+    });
+  });
+});
+
 module.exports = router;
 
-  
